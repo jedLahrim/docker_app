@@ -6,11 +6,9 @@ import { User } from '../auth/entities/user.entity';
 import { ERR_UPLOAD_FAILED } from '../commons/errors/errors-codes';
 import { AppError } from '../commons/errors/app-error';
 import { ConfigService } from '@nestjs/config';
-import {
-  AbortMultipartUploadCommand,
-  PutObjectCommandInput,
-  S3,
-} from '@aws-sdk/client-s3';
+import { ManagedUpload } from 'aws-sdk/clients/s3';
+import { S3 } from 'aws-sdk';
+import { PutObjectCommandInput } from '@aws-sdk/client-s3';
 import { UploadAttachmentDto } from './dto/upload-attachment.dto';
 import { v4 as uuid } from 'uuid';
 import { promises as fs } from 'fs';
@@ -106,7 +104,7 @@ export class AttachmentService {
   private async _uploadAwsFile(
     file: Express.Multer.File,
     user: User,
-  ): Promise<any> {
+  ): Promise<ManagedUpload.SendData> {
     const mediaPath = await this.configService.get('MEDIA_PATH');
     file.path = `${mediaPath}/${file.originalname}`;
     const oldFile = file.path;
@@ -148,12 +146,7 @@ export class AttachmentService {
           },
         });
         console.log('');
-        const command = new AbortMultipartUploadCommand({
-          Key: secretAccessKey,
-          Bucket: bucket,
-          UploadId: uuid,
-        });
-        return s3.send(command);
+        return s3.upload(awsFile).promise();
       } catch (e) {
         throw new ConflictException(
           new AppError(ERR_UPLOAD_FAILED, 'Cannot save file to s3'),
@@ -225,17 +218,12 @@ export class AttachmentService {
           secretAccessKey: secretAccessKey,
         },
       });
-      const command = new AbortMultipartUploadCommand({
-        Key: secretAccessKey,
-        Bucket: bucket,
-        UploadId: uuid,
-      });
-      const sendData = await s3.send(command);
+      const sendData = await s3.upload(awsFile).promise();
       // save attachment after upload
       const { name } = uploadAttachmentDto;
       const attachment = this.attachmentRepo.create({
         name,
-        url: sendData.$metadata.cfId,
+        url: sendData.Location,
       });
       return this.attachmentRepo.save(attachment);
     } catch (e) {
