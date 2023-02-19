@@ -5,6 +5,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { UserModule } from './auth/user.module';
+import { AttachmentModule } from "./attachment/attachment.module";
+import { EmailSchedulingModule } from "./email-scheduling/email-scheduling.module";
+import { StripeModule } from "./stripe/stripe.module";
+import { EventModule } from "./event/event.module";
+import { SmsModule } from "./twilio/sms.module";
+import { PassportModule } from "@nestjs/passport";
 @Module({
   imports: [
     // .env File Or Dashboard
@@ -53,6 +59,13 @@ import { UserModule } from './auth/user.module';
     }),
     //
     UserModule,
+    PassportModule,
+    EventModule,
+    AttachmentModule,
+    SmsModule,
+    EmailSchedulingModule,
+    StripeModule,
+
   ],
   controllers: [AppController],
   providers: [AppService],

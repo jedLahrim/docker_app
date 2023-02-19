@@ -5,6 +5,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { Event } from '../../event/entities/event.entity';
 import { Exclude } from 'class-transformer';
 import { MyCode } from '../../code/code.entity';
 import {
@@ -14,6 +15,8 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { Order } from '../../stripe/order.entity';
+import { SharedEvent } from '../../event/entities/sharedEvent.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -43,6 +46,14 @@ export class User extends BaseEntity {
   @Exclude()
   activated?: boolean;
 
+  @OneToMany((_type) => Event, (event) => event.user, {
+    eager: true,
+    onDelete: 'CASCADE',
+    orphanedRowAction: 'delete',
+  })
+  @Exclude({ toPlainOnly: true, toClassOnly: true })
+  event: Event[];
+
   @OneToMany((_type) => MyCode, (code) => code.user, {
     eager: true,
     onDelete: 'CASCADE',
@@ -50,7 +61,19 @@ export class User extends BaseEntity {
   @Exclude()
   code: MyCode[];
 
+  @OneToMany((_type) => Order, (order) => order.user, {
+    eager: true,
+    onDelete: 'CASCADE',
+  })
+  @Exclude()
+  orders: Order[];
 
+  @OneToMany((_type) => SharedEvent, (sharedEvent) => sharedEvent.user, {
+    eager: true,
+    onDelete: 'CASCADE',
+  })
+  @Exclude()
+  sharedEvents: SharedEvent[];
 
   access: string;
   refresh: string;
