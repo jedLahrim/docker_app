@@ -6,9 +6,12 @@ import { User } from '../auth/entities/user.entity';
 import { ERR_UPLOAD_FAILED } from '../commons/errors/errors-codes';
 import { AppError } from '../commons/errors/app-error';
 import { ConfigService } from '@nestjs/config';
-import { ManagedUpload } from 'aws-sdk/clients/s3';
-import { S3 } from 'aws-sdk';
-import { PutObjectCommandInput } from '@aws-sdk/client-s3';
+import {
+  AbortMultipartUploadCommand, PutObjectCommand,
+  PutObjectCommandInput,
+  S3
+} from "@aws-sdk/client-s3";
+import * as AWS from "@aws-sdk/client-s3";
 import { UploadAttachmentDto } from './dto/upload-attachment.dto';
 import { v4 as uuid } from 'uuid';
 import { promises as fs } from 'fs';
@@ -104,7 +107,7 @@ export class AttachmentService {
   private async _uploadAwsFile(
     file: Express.Multer.File,
     user: User,
-  ): Promise<ManagedUpload.SendData> {
+  ): Promise<any> {
     const mediaPath = await this.configService.get('MEDIA_PATH');
     file.path = `${mediaPath}/${file.originalname}`;
     const oldFile = file.path;
@@ -146,7 +149,12 @@ export class AttachmentService {
           },
         });
         console.log('');
-        return s3.upload(awsFile).promise();
+        const command = new AbortMultipartUploadCommand({
+          Key: secretAccessKey,
+          Bucket: bucket,
+          UploadId: uuid,
+        });
+        return s3.send(command);
       } catch (e) {
         throw new ConflictException(
           new AppError(ERR_UPLOAD_FAILED, 'Cannot save file to s3'),
@@ -218,15 +226,18 @@ export class AttachmentService {
           secretAccessKey: secretAccessKey,
         },
       });
-      const sendData = await s3.upload(awsFile).promise();
+
+      const params = { Bucket: bucket, Key: `awsS3${uuid}` };
+      const sendData =  await s3.send(new PutObjectCommand(params));
       // save attachment after upload
       const { name } = uploadAttachmentDto;
       const attachment = this.attachmentRepo.create({
         name,
-        url: sendData.Location,
+        url: sendData.ETag,
       });
       return this.attachmentRepo.save(attachment);
     } catch (e) {
+      console.log(e)
       throw new ConflictException(
         new AppError(ERR_UPLOAD_FAILED, 'Cannot save file to s3'),
       );
