@@ -313,7 +313,7 @@ export class UserService {
     full_name: string,
     profile_picture: any,
   ): Promise<User> {
-    const pathMedia = this.configService.get('PATH_MEDIA');
+    const pathMedia = this.configService.get('MEDIA_PATH');
     const path = `${pathMedia}${profile_picture.originalname}`;
     const result = await this.getUserById(id);
     result.fullName = full_name;
