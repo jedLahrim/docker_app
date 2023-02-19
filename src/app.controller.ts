@@ -1,5 +1,4 @@
 import { Controller, Get } from '@nestjs/common';
-import { SmsService } from './twilio/sms.service';
 import { AppService } from './app.service';
 
 @Controller()
