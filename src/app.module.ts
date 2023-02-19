@@ -1,19 +1,28 @@
-import { CacheModule, Module } from "@nestjs/common";
+import { CacheModule, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { TypeOrmModule } from "@nestjs/typeorm";
-import { ConfigModule, ConfigService } from "@nestjs/config";
+import { UserModule } from './auth/user.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { PassportModule } from '@nestjs/passport';
+import { EventModule } from './event/event.module';
+import { AttachmentModule } from './attachment/attachment.module';
+import { FirebaseModule } from './firebase/firebase.module';
+import { ApiModule } from './axios/api.module';
+import { SmsModule } from './twilio/sms.module';
+import { EmailSchedulingModule } from './email-scheduling/email-scheduling.module';
 import { ScheduleModule } from '@nestjs/schedule';
-
+import { StripeModule } from './stripe/stripe.module';
 @Module({
   imports: [
     // .env File Or Dashboard
     ConfigModule.forRoot({
+      ignoreEnvFile: false,
       cache: true,
       envFilePath: '.env',
       isGlobal: true,
     }),
-    // CacheModule.register({ isGlobal: true, ttl: 50000 }),
+    CacheModule.register({ isGlobal: true, ttl: 50000 }),
     ScheduleModule.forRoot(),
     // TwilioModule.forRootAsync({
     //   imports: [ConfigModule],
@@ -51,8 +60,20 @@ import { ScheduleModule } from '@nestjs/schedule';
       },
     }),
     //
+
+    UserModule,
+    PassportModule,
+    EventModule,
+    AttachmentModule,
+    FirebaseModule,
+    ApiModule,
+    SmsModule,
+    EmailSchedulingModule,
+    StripeModule,
+    ApiModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
+//
