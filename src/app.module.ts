@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
+import { UserModule } from './auth/user.module';
 @Module({
   imports: [
     // .env File Or Dashboard
@@ -51,6 +52,7 @@ import { ScheduleModule } from '@nestjs/schedule';
       },
     }),
     //
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],
