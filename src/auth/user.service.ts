@@ -14,7 +14,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import * as bcrypt from 'bcrypt';
+// import * as bcrypt from 'bcrypt';
 import { AppError } from '../commons/errors/app-error';
 import {
   EMAIL_OR_PASSWORD_IS_INCORRECT,
@@ -53,6 +53,7 @@ export class UserService {
   ) {}
 
   async register(createUserDto: CreateUserDto) {
+    var bcrypt = require('@types/bcrypt');
     const { email, fullName, password } = createUserDto;
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
@@ -151,6 +152,7 @@ export class UserService {
   }
 
   async reset(resetUserDto: ResetUserDto) {
+    var bcrypt = require('@types/bcrypt');
     const { newPassword, code } = resetUserDto;
     try {
       const now = new Date();
@@ -192,6 +194,7 @@ export class UserService {
   }
 
   async changePassword(user: User, changeUserDto: ChangeUserDto) {
+    var bcrypt = require('@types/bcrypt');
     const { oldPassword, newPassword } = changeUserDto;
     if (user && (await bcrypt.compare(oldPassword, user.password))) {
       const salt = await bcrypt.genSalt();
@@ -210,6 +213,7 @@ export class UserService {
 
   //Login
   async login(loginUserDto: LoginUserDto): Promise<any> {
+    var bcrypt = require('@types/bcrypt');
     const { email, password } = loginUserDto;
     const user = await this.userRepo.findOne({ where: { email } });
     if (!user) {
